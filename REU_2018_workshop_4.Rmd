@@ -8,3 +8,57 @@ output: html_document
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
+
+#read in data
+```{r}
+#####read in PanTHERIA data (original source: http://esapubs.org/archive/ecol/e090/184/#data) 
+
+P <- read.csv("https://rawgit.com/fischhoff/REU_R_2018_workshop_4/master/PanTHERIA_1-0_WR05_Aug2008.csv", header=TRUE)
+
+```
+
+#####replace -999 with NA
+```{r}
+#replace
+P = replace(P, P==-999, NA)
+```
+
+#box and whisker plot of terrestriality vs. log body size
+```{r}
+#metadata: http://esapubs.org/archive/ecol/e090/184/metadata.htm
+P$X12.2_Terrestriality[P$X12.2_Terrestriality==1]="ground"
+P$X12.2_Terrestriality[P$X12.2_Terrestriality==2]="above"
+boxplot(X5.1_AdultBodyMass_g ~ X12.2_Terrestriality, data = P, log = "y")
+```
+
+#add labels
+```{r}
+boxplot(X5.1_AdultBodyMass_g ~ X12.2_Terrestriality, data = P, xlab = "species terrestriality", ylab = "adult body mass (g)", main = "adult body mass in relation to terrestriality", log = "y")
+```
+
+
+```{r}
+t.test(X5.1_AdultBodyMass_g ~ X12.2_Terrestriality, data = P, alternative = "two.sided")
+```
+
+#visualize home ranges in relation to trophic level 
+```{r}
+#metadata: http://esapubs.org/archive/ecol/e090/184/metadata.htm
+P$X6.2_TrophicLevel[P$X6.2_TrophicLevel==1]="herbivore"
+P$X6.2_TrophicLevel[P$X6.2_TrophicLevel==2]="omnivore"
+P$X6.2_TrophicLevel[P$X6.2_TrophicLevel==3]="carnivore"
+boxplot(X10.2_SocialGrpSize ~ X6.2_TrophicLevel, data = P, log = "y", xlab = "trophic level", ylab = "social group size", main = "social group size in relation to trophic level")
+```
+
+#Run ANOVA 
+```{r}
+#install.packages("car")
+library(car)
+#run anova on output of linear model
+Anova(lm(X10.2_SocialGrpSize ~ X6.2_TrophicLevel, data = P))
+```
+#figure out which species differ from the rest
+```{r}
+pairwise.t.test(P$X10.2_SocialGrpSize, P$X6.2_TrophicLevel, p.adj = "bonf")
+```
+
